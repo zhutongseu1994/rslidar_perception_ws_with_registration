@@ -1,0 +1,8 @@
+prefix=/home/sky1/Desktop/rslidar_perception_ws_0106_V1/install
+
+Name: segment
+Description: Description of segment
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: roscpp sensor_msgs pcl_ros std_msgs
