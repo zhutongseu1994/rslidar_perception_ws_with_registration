@@ -41,7 +41,7 @@ namespace skywell
   public:
     int Process(void);
     int GetRegisterFlag(void);
-    int addPairPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target, CloudT::Ptr global_source);
+    int addPairPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target);
     Eigen::Matrix4f get_local_transform_matrix();
     Eigen::Matrix4f get_global_transform_matrix();
     void Init(skywell::Param *param);

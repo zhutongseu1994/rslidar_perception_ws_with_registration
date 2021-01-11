@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src
+CMAKE_SOURCE_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build
+CMAKE_BINARY_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build
 
 # Utility rule file for download_extra_data.
 
@@ -67,6 +67,6 @@ CMakeFiles/download_extra_data.dir/clean:
 .PHONY : CMakeFiles/download_extra_data.dir/clean
 
 CMakeFiles/download_extra_data.dir/depend:
-	cd /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build/CMakeFiles/download_extra_data.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build/CMakeFiles/download_extra_data.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/download_extra_data.dir/depend
 

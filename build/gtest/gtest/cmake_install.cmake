@@ -2,7 +2,7 @@
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/install")
+  set(CMAKE_INSTALL_PREFIX "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

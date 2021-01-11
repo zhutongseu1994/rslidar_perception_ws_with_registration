@@ -19,9 +19,9 @@ except ImportError:
             break
     from catkin.environment_cache import generate_environment_script
 
-code = generate_environment_script('/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/env.sh')
+code = generate_environment_script('/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/env.sh')
 
-output_filename = '/home/sky1/Desktop/rslidar_perception_ws_0106_V1/build/catkin_generated/setup_cached.sh'
+output_filename = '/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build/catkin_generated/setup_cached.sh'
 with open(output_filename, 'w') as f:
     #print('Generate script for cached setup "%s"' % output_filename)
     f.write('\n'.join(code))

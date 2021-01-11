@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/usr/src/gtest")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/build")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)

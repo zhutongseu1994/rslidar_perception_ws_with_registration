@@ -98,14 +98,19 @@ namespace skywell
 
         m_decv_check->aliveDecv(topicName);
 
-        if (topicName == m_param->front_rslidar_topic)
-            pretreat_point_clouds(in_cloud_ptr, cache_lslidar_point_cloud);
+        // if (topicName == m_param->front_rslidar_topic)
+        //     pretreat_point_clouds(in_cloud_ptr, cache_lslidar_point_cloud);
         if (topicName == m_param->left_rslidar_topic)
             pretreat_point_clouds(in_cloud_ptr, cache_rslidarl_point_cloud);
         if (topicName == m_param->right_rslidar_topic)
             pretreat_point_clouds(in_cloud_ptr, cache_rslidarr_point_cloud);
 
-        if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+        // if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+        // {
+        //     return;
+        // }
+
+        if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
         {
             return;
         }
@@ -113,8 +118,8 @@ namespace skywell
         //两补盲雷达配准
         CloudT::Ptr rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
         CloudT::Ptr rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
-        CloudT::Ptr lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
-        m_registration->addPairPointCloud(rslidarl_source_cloud_ptr, rslidarr_target_cloud_ptr, lslidar_source_cloud_ptr);
+        //CloudT::Ptr lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
+        m_registration->addPairPointCloud(rslidarl_source_cloud_ptr, rslidarr_target_cloud_ptr);
 
         CloudT::Ptr pair_result_cloud_ptr = boost::make_shared<CloudT>();
         //if (m_registration->GetRegisterFlag() == 1)
@@ -126,23 +131,23 @@ namespace skywell
 
         transform_point_clouds(rslidarl_source_cloud_ptr, rslidarr_target_cloud_ptr, pair_result_cloud_ptr, pairTransform);
 
-        //补盲雷达配准后的结果和主雷达配准
-        CloudT::Ptr global_result_cloud_ptr = boost::make_shared<CloudT>();
-        if (m_param->need_global_registration)
-        {
-            //if (m_registration->GetRegisterFlag() == 1)
-            {
-                globalTransform = m_registration->get_global_transform_matrix();
-                cout << "globalTransform: \n"
-                     << globalTransform.matrix() << endl;
-            }
+        // //补盲雷达配准后的结果和主雷达配准
+        // CloudT::Ptr global_result_cloud_ptr = boost::make_shared<CloudT>();
+        // if (m_param->need_global_registration)
+        // {
+        //     //if (m_registration->GetRegisterFlag() == 1)
+        //     {
+        //         globalTransform = m_registration->get_global_transform_matrix();
+        //         cout << "globalTransform: \n"
+        //              << globalTransform.matrix() << endl;
+        //     }
 
-            transform_point_clouds(lslidar_source_cloud_ptr, pair_result_cloud_ptr, global_result_cloud_ptr, globalTransform);
-            publish_cloud(pub_register_point, global_result_cloud_ptr);
-        }
+        //     transform_point_clouds(lslidar_source_cloud_ptr, pair_result_cloud_ptr, global_result_cloud_ptr, globalTransform);
+        //     publish_cloud(pub_register_point, global_result_cloud_ptr);
+        // }
         // printf("The program is running here.\n");
 
-        cache_lslidar_point_cloud.clear();
+        //cache_lslidar_point_cloud.clear();
         cache_rslidarl_point_cloud.clear();
         cache_rslidarr_point_cloud.clear();
 
@@ -152,7 +157,7 @@ namespace skywell
         //ROS_INFO("startTime time:%s\n",gettimestamp(start.tv_sec*1000000+start.tv_usec).c_str());
         // 体素下采样
         CloudT::Ptr octree_voxel_grid_ptr = boost::make_shared<CloudT>();
-        octreeVoxelGrid(m_param->leaf_size, global_result_cloud_ptr, octree_voxel_grid_ptr);
+        octreeVoxelGrid(m_param->leaf_size, pair_result_cloud_ptr, octree_voxel_grid_ptr);
 
         // 去除nan点
         CloudT::Ptr remove_nan_ptr = boost::make_shared<CloudT>();

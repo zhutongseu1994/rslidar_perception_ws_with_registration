@@ -1,8 +1,8 @@
-prefix=/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel
+prefix=/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel
 
 Name: track
 Description: Description of track
 Version: 0.0.0
-Cflags: -I/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/include -I/home/sky1/Desktop/rslidar_perception_ws_0106_V1/src/track/include
+Cflags: -I/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/include -I/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src/track/include
 Libs: -L${prefix}/lib 
 Requires: roscpp sensor_msgs pcl_ros std_msgs

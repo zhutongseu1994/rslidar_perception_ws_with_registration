@@ -35,25 +35,25 @@ namespace skywell
         pairTransform_ = pairTransform;
         pthread_rwlock_unlock(&thread_rwlock);
 
-        icp_register_point_clouds(global_source_ptr, pair_result_cloud_ptr, global_result_cloud_ptr, globalTransform);
-        cout << "globalTransform_in_icp_thread:\n"
-             << globalTransform.matrix() << endl;
+        // icp_register_point_clouds(global_source_ptr, pair_result_cloud_ptr, global_result_cloud_ptr, globalTransform);
+        // cout << "globalTransform_in_icp_thread:\n"
+        //      << globalTransform.matrix() << endl;
 
-        pthread_rwlock_trywrlock(&thread_rwlock);
-        globalTransform_ = globalTransform;
-        pthread_rwlock_unlock(&thread_rwlock);
+        // pthread_rwlock_trywrlock(&thread_rwlock);
+        // globalTransform_ = globalTransform;
+        // pthread_rwlock_unlock(&thread_rwlock);
 
         registerflag = 1;
         return -99;
     }
 
-    int IcpRegistration::addPairPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target, CloudT::Ptr global_source)
+    int IcpRegistration::addPairPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target)
     {
         if (GetRunFlag() != 2)
         {
             local_source_ptr = local_source;
             local_target_ptr = local_target;
-            global_source_ptr = global_source;
+            //global_source_ptr = global_source;
             ThreadStart();
         }
         return 0;
@@ -68,14 +68,14 @@ namespace skywell
         return _pairTransform;
     }
 
-    Eigen::Matrix4f IcpRegistration::get_global_transform_matrix()
-    {
-        Eigen::Matrix4f _globalTransform;
-        pthread_rwlock_tryrdlock(&thread_rwlock);
-        _globalTransform = globalTransform_;
-        pthread_rwlock_unlock(&thread_rwlock);
-        return _globalTransform;
-    }
+    // Eigen::Matrix4f IcpRegistration::get_global_transform_matrix()
+    // {
+    //     Eigen::Matrix4f _globalTransform;
+    //     pthread_rwlock_tryrdlock(&thread_rwlock);
+    //     _globalTransform = globalTransform_;
+    //     pthread_rwlock_unlock(&thread_rwlock);
+    //     return _globalTransform;
+    // }
 
     void IcpRegistration::icp_register_point_clouds(CloudT::Ptr &source_cloud_ptr,
                                                     CloudT::Ptr &target_cloud_ptr,
