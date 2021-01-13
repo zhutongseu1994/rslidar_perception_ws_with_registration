@@ -34,7 +34,8 @@
 #include "param.h"
 #include "decvcheck.h"
 #include "grid.h"
-#include "IcpRegistration.hpp"
+
+#include "icp_registraion.h"
 
 #define RADIAL_DIVIDER_ANGLE 1.0
 #define concentric_divider_distance_ 0.3 //0.1 meters default
@@ -154,8 +155,6 @@ class Grid
         ros::Publisher pub_point_3;
         ros::Publisher pub_point_4;
 
-        ros::Publisher pub_register_point;
-
         unsigned long int last_point_could_stamp;
 
     private:
@@ -167,19 +166,23 @@ class Grid
         ofstream m_file;
 
     private:
+        void pretreatPointClouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, vector<CloudT> &cloud_container);
+        void transformPointClouds(const CloudT::Ptr &source_cloud_ptr,
+                                  const CloudT::Ptr &target_cloud_ptr,
+                                  CloudT::Ptr &result_cloud_ptr,
+                                  Eigen::Matrix4f &transform_matrix);
+
+    private:
+        skywell::IcpRegistration *registration_;
+
+        ros::Publisher pub_register_point_;
+
+        Eigen::Matrix4f rslidar_transform_ = Eigen::Matrix4f::Identity();
+        Eigen::Matrix4f lslidar_transform_ = Eigen::Matrix4f::Identity();
+
         std::vector<CloudT> cache_rslidarl_point_cloud;
         std::vector<CloudT> cache_rslidarr_point_cloud;
         std::vector<CloudT> cache_lslidar_point_cloud;
-
-        Eigen::Matrix4f pairTransform = Eigen::Matrix4f::Identity();
-        Eigen::Matrix4f globalTransform = Eigen::Matrix4f::Identity();
-
-        void pretreat_point_clouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, vector<CloudT> &cloud_container);
-        void transform_point_clouds(const CloudT::Ptr &source_cloud_ptr,
-                                    const CloudT::Ptr &target_cloud_ptr,
-                                    CloudT::Ptr &result_cloud_ptr,
-                                    Eigen::Matrix4f &transform_matrix);
-        skywell::IcpRegistration *m_registration;
     };
 
 } // namespace skywell

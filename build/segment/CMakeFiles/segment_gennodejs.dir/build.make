@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src
+CMAKE_SOURCE_DIR = /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build
+CMAKE_BINARY_DIR = /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build
 
 # Utility rule file for segment_gennodejs.
 
@@ -63,10 +63,10 @@ segment/CMakeFiles/segment_gennodejs.dir/build: segment_gennodejs
 .PHONY : segment/CMakeFiles/segment_gennodejs.dir/build
 
 segment/CMakeFiles/segment_gennodejs.dir/clean:
-	cd /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build/segment && $(CMAKE_COMMAND) -P CMakeFiles/segment_gennodejs.dir/cmake_clean.cmake
+	cd /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build/segment && $(CMAKE_COMMAND) -P CMakeFiles/segment_gennodejs.dir/cmake_clean.cmake
 .PHONY : segment/CMakeFiles/segment_gennodejs.dir/clean
 
 segment/CMakeFiles/segment_gennodejs.dir/depend:
-	cd /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/src/segment /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build/segment /home/sky1/program/rslidar_perception_ws_with_registration_V1.1/build/segment/CMakeFiles/segment_gennodejs.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src/segment /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build/segment /home/sky1/Desktop/rslidar_perception_ws_0106_V1/build/segment/CMakeFiles/segment_gennodejs.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : segment/CMakeFiles/segment_gennodejs.dir/depend
 

@@ -1,15 +1,15 @@
 file(REMOVE_RECURSE
   "CMakeFiles/track_generate_messages_nodejs"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Center.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/OnLineState.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Cluster.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/ObstPointCloud.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Heart.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/PointXYZI.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/ObstSet.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Tk_State.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Rotate.js"
-  "/home/sky1/program/rslidar_perception_ws_with_registration_V1.1/devel/share/gennodejs/ros/track/msg/Object.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Cluster.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Heart.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Center.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Rotate.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/ObstPointCloud.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Object.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/PointXYZI.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/OnLineState.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/ObstSet.js"
+  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/share/gennodejs/ros/track/msg/Tk_State.js"
 )
 
 # Per-language clean rules from dependency scanning.

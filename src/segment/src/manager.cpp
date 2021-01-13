@@ -13,7 +13,7 @@ namespace skywell
     {
         m_param = param;
         m_decv_check = NULL;
-        m_registration = NULL;
+        registration_ = NULL;
 
         SubInit(nh, param);
         PubInit(nh, param);
@@ -39,6 +39,7 @@ namespace skywell
             sub_right_rslidar = nh.subscribe<sensor_msgs::PointCloud2>(param->right_rslidar_topic, 10, boost::bind(&Manager::doRslidarWork, this, _1, param->right_rslidar_topic));
         }
     };
+
     void Manager::PubInit(ros::NodeHandle &nh, skywell::Param *param)
     {
         if (param->pub_ground != "")
@@ -51,7 +52,8 @@ namespace skywell
         }
         marker_pub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 10);
         decv_state_pub = nh.advertise<segment::OnLineState>("lidar_oline_state", 10);
-        pub_register_point = nh.advertise<sensor_msgs::PointCloud2>("global_register_points", 10);
+
+        pub_register_point_ = nh.advertise<sensor_msgs::PointCloud2>("registration_points", 10);
     };
 
     void Manager::ModInit(skywell::Param *param)
@@ -73,12 +75,14 @@ namespace skywell
                 m_decv_check->addDecv(param->right_rslidar_topic, 0x03);
             }
         }
-        if (m_registration == NULL)
+
+        if (registration_ == NULL)
         {
-            m_registration = new IcpRegistration();
+            registration_ = new IcpRegistration();
         }
-        m_registration->Init(param);
+        registration_->IcpRegistrationInit(param);
     };
+
     //64位 微妙时间戳格式化 %G-%m-%d %H:%M:%S.%N
     string gettimestamp(uint64_t timestamp)
     {
@@ -98,56 +102,60 @@ namespace skywell
 
         m_decv_check->aliveDecv(topicName);
 
-        // if (topicName == m_param->front_rslidar_topic)
-        //     pretreat_point_clouds(in_cloud_ptr, cache_lslidar_point_cloud);
+        if (topicName == m_param->front_rslidar_topic)
+            pretreatPointClouds(in_cloud_ptr, cache_lslidar_point_cloud);
         if (topicName == m_param->left_rslidar_topic)
-            pretreat_point_clouds(in_cloud_ptr, cache_rslidarl_point_cloud);
+            pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
         if (topicName == m_param->right_rslidar_topic)
-            pretreat_point_clouds(in_cloud_ptr, cache_rslidarr_point_cloud);
+            pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
 
-        // if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
-        // {
-        //     return;
-        // }
-
-        if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+        if (m_param->need_global_registration)
         {
-            return;
+            if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+            {
+                return;
+            }
+        }
+        else
+        {
+            if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+            {
+                return;
+            }
         }
 
         //两补盲雷达配准
-        CloudT::Ptr rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
-        CloudT::Ptr rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
-        //CloudT::Ptr lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
-        m_registration->addPairPointCloud(rslidarl_source_cloud_ptr, rslidarr_target_cloud_ptr);
+        CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
+        CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
+        CloudT::Ptr _lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
+        registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr, _lslidar_source_cloud_ptr);
 
-        CloudT::Ptr pair_result_cloud_ptr = boost::make_shared<CloudT>();
-        //if (m_registration->GetRegisterFlag() == 1)
+        CloudT::Ptr _rslidar_result_cloud_ptr = boost::make_shared<CloudT>();
+
+        rslidar_transform_ = registration_->getLocalTransformMatrix();
+        cout << "rslidar_transform: \n"
+             << rslidar_transform_.matrix() << endl;
+
+        transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
+                             _rslidar_result_cloud_ptr, rslidar_transform_);
+        publish_cloud(pub_register_point_, _rslidar_result_cloud_ptr);
+
+        //补盲雷达配准后的结果和主雷达配准
+        CloudT::Ptr _lslidar_result_cloud_ptr = boost::make_shared<CloudT>();
+        if (m_param->need_global_registration)
         {
-            pairTransform = m_registration->get_local_transform_matrix();
-            cout << "pairTransform: \n"
-                 << pairTransform.matrix() << endl;
+
+            lslidar_transform_ = registration_->getGlobaltransformMatrix();
+            cout << "lslidar_transform: \n"
+                 << lslidar_transform_.matrix() << endl;
+
+            transformPointClouds(_lslidar_source_cloud_ptr, _rslidar_result_cloud_ptr,
+                                 _lslidar_result_cloud_ptr, lslidar_transform_);
+            publish_cloud(pub_register_point_, _lslidar_result_cloud_ptr);
         }
-
-        transform_point_clouds(rslidarl_source_cloud_ptr, rslidarr_target_cloud_ptr, pair_result_cloud_ptr, pairTransform);
-
-        // //补盲雷达配准后的结果和主雷达配准
-        // CloudT::Ptr global_result_cloud_ptr = boost::make_shared<CloudT>();
-        // if (m_param->need_global_registration)
-        // {
-        //     //if (m_registration->GetRegisterFlag() == 1)
-        //     {
-        //         globalTransform = m_registration->get_global_transform_matrix();
-        //         cout << "globalTransform: \n"
-        //              << globalTransform.matrix() << endl;
-        //     }
-
-        //     transform_point_clouds(lslidar_source_cloud_ptr, pair_result_cloud_ptr, global_result_cloud_ptr, globalTransform);
-        //     publish_cloud(pub_register_point, global_result_cloud_ptr);
-        // }
         // printf("The program is running here.\n");
 
-        //cache_lslidar_point_cloud.clear();
+        cache_lslidar_point_cloud.clear();
         cache_rslidarl_point_cloud.clear();
         cache_rslidarr_point_cloud.clear();
 
@@ -155,9 +163,17 @@ namespace skywell
         struct timeval start;
         gettimeofday(&start, NULL);
         //ROS_INFO("startTime time:%s\n",gettimestamp(start.tv_sec*1000000+start.tv_usec).c_str());
+
         // 体素下采样
         CloudT::Ptr octree_voxel_grid_ptr = boost::make_shared<CloudT>();
-        octreeVoxelGrid(m_param->leaf_size, pair_result_cloud_ptr, octree_voxel_grid_ptr);
+        if (m_param->need_global_registration)
+        {
+            octreeVoxelGrid(m_param->leaf_size, _lslidar_result_cloud_ptr, octree_voxel_grid_ptr);
+        }
+        else
+        {
+            octreeVoxelGrid(m_param->leaf_size, _rslidar_result_cloud_ptr, octree_voxel_grid_ptr);
+        }
 
         // 去除nan点
         CloudT::Ptr remove_nan_ptr = boost::make_shared<CloudT>();
@@ -198,17 +214,17 @@ namespace skywell
         ROS_INFO("segment_node---------------- use_time = %f mesc\n", elapsedTime);
     };
 
-    void Manager::pretreat_point_clouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, std::vector<CloudT> &cloud_container)
+    void Manager::pretreatPointClouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, std::vector<CloudT> &cloud_container)
     {
         pcl::PointCloud<pcl::PointXYZI>::Ptr current_pc_ptr = boost::make_shared<CloudT>();
         pcl::fromROSMsg(*in_cloud_ptr, *current_pc_ptr);
         cloud_container.push_back(*current_pc_ptr);
     }
 
-    void Manager::transform_point_clouds(const CloudT::Ptr &source_cloud_ptr,
-                                         const CloudT::Ptr &target_cloud_ptr,
-                                         CloudT::Ptr &result_cloud_ptr,
-                                         Eigen::Matrix4f &transform_matrix)
+    void Manager::transformPointClouds(const CloudT::Ptr &source_cloud_ptr,
+                                       const CloudT::Ptr &target_cloud_ptr,
+                                       CloudT::Ptr &result_cloud_ptr,
+                                       Eigen::Matrix4f &transform_matrix)
     {
         //把目标点云转换回源框架
         pcl::transformPointCloud(*target_cloud_ptr, *result_cloud_ptr, transform_matrix);
