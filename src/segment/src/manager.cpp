@@ -102,62 +102,91 @@ namespace skywell
 
         m_decv_check->aliveDecv(topicName);
 
-        if (topicName == m_param->front_rslidar_topic)
-            pretreatPointClouds(in_cloud_ptr, cache_lslidar_point_cloud);
-        if (topicName == m_param->left_rslidar_topic)
-            pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
-        if (topicName == m_param->right_rslidar_topic)
-            pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
-
         if (m_param->need_global_registration)
         {
+            if (topicName == m_param->front_rslidar_topic)
+            {
+                pretreatPointClouds(in_cloud_ptr, cache_lslidar_point_cloud);
+            }
+
+            if (topicName == m_param->left_rslidar_topic)
+            {
+                pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
+            }
+
+            if (topicName == m_param->right_rslidar_topic)
+            {
+                pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
+            }
+
             if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
             {
                 return;
             }
-        }
-        else
-        {
-            if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
-            {
-                return;
-            }
-        }
 
-        //两补盲雷达配准
-        CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
-        CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
-        CloudT::Ptr _lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
-        registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr, _lslidar_source_cloud_ptr);
+            //两补盲雷达配准
+            CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
+            CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
+            CloudT::Ptr _lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
+            registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr, _lslidar_source_cloud_ptr);
 
-        CloudT::Ptr _rslidar_result_cloud_ptr = boost::make_shared<CloudT>();
+            rslidar_transform_ = registration_->getLocalTransformMatrix();
+            cout << "rslidar_transform: \n"
+                 << rslidar_transform_.matrix() << endl;
 
-        rslidar_transform_ = registration_->getLocalTransformMatrix();
-        cout << "rslidar_transform: \n"
-             << rslidar_transform_.matrix() << endl;
+            transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
+                                 rslidar_result_cloud_ptr_, rslidar_transform_);
 
-        transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
-                             _rslidar_result_cloud_ptr, rslidar_transform_);
-        publish_cloud(pub_register_point_, _rslidar_result_cloud_ptr);
-
-        //补盲雷达配准后的结果和主雷达配准
-        CloudT::Ptr _lslidar_result_cloud_ptr = boost::make_shared<CloudT>();
-        if (m_param->need_global_registration)
-        {
+            //补盲雷达配准后的结果和主雷达配准
 
             lslidar_transform_ = registration_->getGlobaltransformMatrix();
             cout << "lslidar_transform: \n"
                  << lslidar_transform_.matrix() << endl;
 
-            transformPointClouds(_lslidar_source_cloud_ptr, _rslidar_result_cloud_ptr,
-                                 _lslidar_result_cloud_ptr, lslidar_transform_);
-            publish_cloud(pub_register_point_, _lslidar_result_cloud_ptr);
-        }
-        // printf("The program is running here.\n");
+            transformPointClouds(_lslidar_source_cloud_ptr, rslidar_result_cloud_ptr_,
+                                 lslidar_result_cloud_ptr_, lslidar_transform_);
+            publish_cloud(pub_register_point_, lslidar_result_cloud_ptr_);
 
-        cache_lslidar_point_cloud.clear();
-        cache_rslidarl_point_cloud.clear();
-        cache_rslidarr_point_cloud.clear();
+            // printf("The program is running here.\n");
+
+            cache_lslidar_point_cloud.clear();
+            cache_rslidarl_point_cloud.clear();
+            cache_rslidarr_point_cloud.clear();
+        }
+        else
+        {
+            if (topicName == m_param->left_rslidar_topic)
+            {
+                pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
+            }
+
+            if (topicName == m_param->right_rslidar_topic)
+            {
+                pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
+            }
+
+            if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
+            {
+                return;
+            }
+
+            //两补盲雷达配准
+            CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
+            CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
+
+            registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr);
+
+            rslidar_transform_ = registration_->getLocalTransformMatrix();
+            cout << "rslidar_transform: \n"
+                 << rslidar_transform_.matrix() << endl;
+
+            transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
+                                 rslidar_result_cloud_ptr_, rslidar_transform_);
+            publish_cloud(pub_register_point_, rslidar_result_cloud_ptr_);
+
+            cache_rslidarl_point_cloud.clear();
+            cache_rslidarr_point_cloud.clear();
+        }
 
         ros::Time startTime = ros::Time::now();
         struct timeval start;
@@ -168,11 +197,11 @@ namespace skywell
         CloudT::Ptr octree_voxel_grid_ptr = boost::make_shared<CloudT>();
         if (m_param->need_global_registration)
         {
-            octreeVoxelGrid(m_param->leaf_size, _lslidar_result_cloud_ptr, octree_voxel_grid_ptr);
+            octreeVoxelGrid(m_param->leaf_size, lslidar_result_cloud_ptr_, octree_voxel_grid_ptr);
         }
         else
         {
-            octreeVoxelGrid(m_param->leaf_size, _rslidar_result_cloud_ptr, octree_voxel_grid_ptr);
+            octreeVoxelGrid(m_param->leaf_size, rslidar_result_cloud_ptr_, octree_voxel_grid_ptr);
         }
 
         // 去除nan点

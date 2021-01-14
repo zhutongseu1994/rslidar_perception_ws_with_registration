@@ -7,9 +7,9 @@ file(REMOVE_RECURSE
   "CMakeFiles/segment_node.dir/src/config.cpp.o"
   "CMakeFiles/segment_node.dir/src/thread.cpp.o"
   "CMakeFiles/segment_node.dir/src/decvcheck.cpp.o"
-  "CMakeFiles/segment_node.dir/src/IcpRegistration.cpp.o"
-  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/lib/segment/segment_node.pdb"
-  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/lib/segment/segment_node"
+  "CMakeFiles/segment_node.dir/src/icp_registration.cpp.o"
+  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/segment/segment_node.pdb"
+  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/segment/segment_node"
 )
 
 # Per-language clean rules from dependency scanning.

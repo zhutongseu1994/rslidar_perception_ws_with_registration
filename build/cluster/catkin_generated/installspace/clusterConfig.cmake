@@ -67,14 +67,14 @@ set(cluster_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(cluster_SOURCE_PREFIX /home/sky1/Desktop/rslidar_perception_ws_0106_V1/src/cluster)
-  set(cluster_DEVEL_PREFIX /home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel)
+  set(cluster_SOURCE_PREFIX /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src/cluster)
+  set(cluster_DEVEL_PREFIX /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel)
   set(cluster_INSTALL_PREFIX "")
   set(cluster_PREFIX ${cluster_DEVEL_PREFIX})
 else()
   set(cluster_SOURCE_PREFIX "")
   set(cluster_DEVEL_PREFIX "")
-  set(cluster_INSTALL_PREFIX /home/sky1/Desktop/rslidar_perception_ws_0106_V1/install)
+  set(cluster_INSTALL_PREFIX /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/install)
   set(cluster_PREFIX ${cluster_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/sky1/Desktop/rslidar_perception_ws_0106_V1/install/lib;/opt/ros/kinetic/lib)
+    foreach(path /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/install/lib;/opt/ros/kinetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

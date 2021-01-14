@@ -14,8 +14,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/track_node.dir/src/thread.cpp.o"
   "CMakeFiles/track_node.dir/src/client.cpp.o"
   "CMakeFiles/track_node.dir/src/commclient.cpp.o"
-  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/lib/track/track_node.pdb"
-  "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/lib/track/track_node"
+  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/track/track_node.pdb"
+  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/track/track_node"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -1,5 +1,5 @@
 # generated from catkin/cmake/template/order_packages.context.py.in
-source_root_dir = "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/src"
+source_root_dir = "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src"
 whitelisted_packages = "".split(';') if "" != "" else []
 blacklisted_packages = "".split(';') if "" != "" else []
 underlay_workspaces = "/opt/ros/kinetic".split(';') if "/opt/ros/kinetic" != "" else []

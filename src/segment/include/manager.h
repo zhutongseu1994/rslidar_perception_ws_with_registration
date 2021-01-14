@@ -183,6 +183,9 @@ class Grid
         std::vector<CloudT> cache_rslidarl_point_cloud;
         std::vector<CloudT> cache_rslidarr_point_cloud;
         std::vector<CloudT> cache_lslidar_point_cloud;
+
+        CloudT::Ptr rslidar_result_cloud_ptr_ = boost::make_shared<CloudT>();
+        CloudT::Ptr lslidar_result_cloud_ptr_ = boost::make_shared<CloudT>();
     };
 
 } // namespace skywell

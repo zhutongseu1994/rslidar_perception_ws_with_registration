@@ -1,8 +1,8 @@
 # generated from catkin/cmake/template/pkg.context.pc.in
 CATKIN_PACKAGE_PREFIX = ""
-PROJECT_PKG_CONFIG_INCLUDE_DIRS = "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/include;/home/sky1/Desktop/rslidar_perception_ws_0106_V1/src/segment/include".split(';') if "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel/include;/home/sky1/Desktop/rslidar_perception_ws_0106_V1/src/segment/include" != "" else []
+PROJECT_PKG_CONFIG_INCLUDE_DIRS = "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/include;/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src/segment/include".split(';') if "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/include;/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src/segment/include" != "" else []
 PROJECT_CATKIN_DEPENDS = "roscpp;sensor_msgs;pcl_ros;std_msgs".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "segment"
-PROJECT_SPACE_DIR = "/home/sky1/Desktop/rslidar_perception_ws_0106_V1/devel"
+PROJECT_SPACE_DIR = "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel"
 PROJECT_VERSION = "0.0.0"

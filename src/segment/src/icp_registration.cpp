@@ -1,3 +1,10 @@
+/***********************************************************
+ * @copyright Copyright (C), 2019-, skywell-mobility Tech. Co., Ltd.
+ * @author ZhuTong(zhutong@skywell-mobility.com)
+ * @version 1.0
+ * @date 2021-01-14
+ * @brief 点云实时配准
+ ***********************************************************/
 #include "icp_registraion.h"
 
 namespace skywell
@@ -18,6 +25,13 @@ namespace skywell
         param_ = param;
     }
 
+    /***********************************************************
+     * @brief 有主雷达情况下添加配准的点云
+     * @param[in]  local_source     补盲雷达源点云
+     * @param[in]  local_target     补盲雷达目标点云
+     * @param[in]  global_source    主雷达源点云
+     * @return int 
+    ***********************************************************/
     int IcpRegistration::addPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target, CloudT::Ptr global_source)
     {
         if (GetRunFlag() != 2)
@@ -30,6 +44,30 @@ namespace skywell
         return 0;
     }
 
+    /***********************************************************
+     * @brief 无主雷达情况下添加配准的点云
+     * @param[in]  local_source     补盲雷达源点云
+     * @param[in]  local_target     补盲雷达目标点云
+     * @return int 
+     ***********************************************************/
+    int IcpRegistration::addPointCloud(CloudT::Ptr local_source, CloudT::Ptr local_target)
+    {
+        if (GetRunFlag() != 2)
+        {
+            rslidar_source_ptr_ = local_source;
+            rslidar_target_ptr_ = local_target;
+            ThreadStart();
+        }
+        return 0;
+    }
+
+    /***********************************************************
+     * @brief 点云配准准备操作(截取区域)及配准
+     * @param[in]  source_cloud_ptr 配准源点云
+     * @param[in]  target_cloud_ptr 配准目标点云
+     * @param[out]  result_cloud_ptr 配准后的点云
+     * @param[out]  pair_transform   旋转矩阵
+    ***********************************************************/
     void IcpRegistration::registerPointCloudsUsingICP(CloudT::Ptr &source_cloud_ptr,
                                                       CloudT::Ptr &target_cloud_ptr,
                                                       CloudT::Ptr &result_cloud_ptr,
@@ -60,15 +98,28 @@ namespace skywell
         *result_cloud_ptr += *source_cloud_ptr;
     }
 
-    // 去除nan点
+    /***********************************************************
+     * @brief 去除nan点
+     * @param[in]  in               输入点云指针
+     * @param[out]  out              输出点云指针
+    ***********************************************************/
     void IcpRegistration::removeNan(pcl::PointCloud<pcl::PointXYZI>::Ptr &in, pcl::PointCloud<pcl::PointXYZI>::Ptr &out)
     {
         std::vector<int> _indices;
         pcl::removeNaNFromPointCloud(*in, *out, _indices);
     }
 
+    /***********************************************************
+     * @brief 截取区域点云
+     * @param[in]  minx             截取区域最小x坐标
+     * @param[in]  miny             截取区域最大x坐标
+     * @param[in]  maxx             截取区域最小y坐标
+     * @param[in]  maxy             截取区域最大y坐标
+     * @param[in]  in               输入点云
+     * @param[out] out              输出点云
+    ***********************************************************/
     void IcpRegistration::removeClosePoints(double minx, double miny, double maxx, double maxy,
-                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr in, 
+                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr in,
                                             const pcl::PointCloud<pcl::PointXYZI>::Ptr out)
     {
         skywell::CropBoxFilter _crop;
@@ -78,6 +129,12 @@ namespace skywell
         _crop.filter(in, out);
     }
 
+    /***********************************************************
+     * @brief ICP配准算法
+     * @param[in]  source_cloud_ptr 源点云
+     * @param[in]  target_cloud_ptr 目标点云
+     * @param[out]  final_transform  旋转矩阵
+    ***********************************************************/
     void IcpRegistration::alignPointCloudsUsingICP(pcl::PointCloud<pcl::PointXYZI>::Ptr &source_cloud_ptr,
                                                    pcl::PointCloud<pcl::PointXYZI>::Ptr &target_cloud_ptr,
                                                    Eigen::Matrix4f &final_transform)
@@ -103,7 +160,7 @@ namespace skywell
             _ti = _icp_ptr->getFinalTransformation() * _ti;
             //如果这次转换和之前转换之间的差异小于阈值
             //则通过减小最大对应距离来改善程序
-            if (fabs((_icp_ptr->getLastIncrementalTransformation() - prev).sum()) < _icp_ptr->getTransformationEpsilon())
+            if (fabs((_icp_ptr->getLastIncrementalTransformation() - _prev).sum()) < _icp_ptr->getTransformationEpsilon())
             {
                 _icp_ptr->setMaxCorrespondenceDistance(_icp_ptr->getMaxCorrespondenceDistance() - 0.001);
             }
@@ -114,6 +171,10 @@ namespace skywell
         final_transform = _target_to_source;
     }
 
+    /***********************************************************
+     * @brief 获得配准状态
+     * @return int 
+    ***********************************************************/
     int IcpRegistration::getRegistrationFlag(void)
     {
         int _r;
@@ -123,6 +184,10 @@ namespace skywell
         return _r;
     }
 
+    /***********************************************************
+     * @brief 线程执行函数
+     * @return int 
+    ***********************************************************/
     int IcpRegistration::Process(void)
     {
         param_->loadcfg();
@@ -133,7 +198,7 @@ namespace skywell
         //左补盲和右补盲雷达配准
         register_flag_ = 0;
 
-        icp_register_point_clouds(rslidar_source_ptr_, rslidar_target_ptr_, _rslidar_result_cloud_ptr, rslidar_transform_);
+        registerPointCloudsUsingICP(rslidar_source_ptr_, rslidar_target_ptr_, _rslidar_result_cloud_ptr, rslidar_transform_);
         cout << "rslidar_transform_in_icp_thread:\n"
              << rslidar_transform_.matrix() << endl;
         pthread_rwlock_trywrlock(&thread_rwlock);
@@ -141,7 +206,7 @@ namespace skywell
         pthread_rwlock_unlock(&thread_rwlock);
         if (param_->need_global_registration)
         {
-            icp_register_point_clouds(lslidar_source_ptr_, _rslidar_result_cloud_ptr, _lslidar_result_cloud_ptr, lslidar_transform_);
+            registerPointCloudsUsingICP(lslidar_source_ptr_, _rslidar_result_cloud_ptr, _lslidar_result_cloud_ptr, lslidar_transform_);
             cout << "lslidar_transform_in_icp_thread:\n"
                  << lslidar_transform_.matrix() << endl;
 
@@ -153,6 +218,10 @@ namespace skywell
         return -99;
     }
 
+    /***********************************************************
+     * @brief 获得补盲雷达配准旋转矩阵
+     * @return 旋转矩阵
+    ***********************************************************/
     Eigen::Matrix4f IcpRegistration::getLocalTransformMatrix()
     {
         Eigen::Matrix4f _rslidar_transform_for_read;
@@ -162,7 +231,7 @@ namespace skywell
         _rslidar_transform_for_read = rslidar_transform_instead_;
         pthread_rwlock_unlock(&thread_rwlock);
 
-        if(_need_last_transform)
+        if (_need_last_transform)
         {
             _rslidar_transform_for_read = last_rslidar_transform_;
         }
@@ -174,6 +243,10 @@ namespace skywell
         return _rslidar_transform_for_read;
     }
 
+    /***********************************************************
+     * @brief 获得主雷达配准旋转矩阵
+     * @return 旋转矩阵 
+    ***********************************************************/
     Eigen::Matrix4f IcpRegistration::getGlobaltransformMatrix()
     {
         Eigen::Matrix4f _lslidar_transform_for_read;
