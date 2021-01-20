@@ -33,9 +33,7 @@
 #include "cluster.h"
 #include "param.h"
 #include "decvcheck.h"
-#include "grid.h"
-
-#include "icp_registraion.h"
+#include "grid_segment.h"
 
 #define RADIAL_DIVIDER_ANGLE 1.0
 #define concentric_divider_distance_ 0.3 //0.1 meters default
@@ -51,14 +49,6 @@ typedef unsigned long long uint64;
 using namespace std;
 namespace skywell
 {
-    /*
-class Grid
-{
-	public:
-	typename pcl::PointCloud<PointT>::Ptr grid_cloud {new pcl::PointCloud<PointT>()};
-	pcl::PointIndices::Ptr grid_inliers {new pcl::PointIndices};
-
-};*/
 
     typedef struct st_Point
     {
@@ -166,26 +156,15 @@ class Grid
         ofstream m_file;
 
     private:
-        void pretreatPointClouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, vector<CloudT> &cloud_container);
-        void transformPointClouds(const CloudT::Ptr &source_cloud_ptr,
-                                  const CloudT::Ptr &target_cloud_ptr,
-                                  CloudT::Ptr &result_cloud_ptr,
-                                  Eigen::Matrix4f &transform_matrix);
+        boost::shared_ptr<std::vector<skywell::Grid>> ground_grid_list = boost::make_shared<std::vector<Grid>>();
 
     private:
-        skywell::IcpRegistration *registration_;
+        void extractPointCloudByAngle(float ray_angle, const sensor_msgs::PointCloud2ConstPtr in_cloud,
+                                      float min_extract_angle, float max_extract_angle,
+                                      pcl::PointCloud<pcl::PointXYZI>::Ptr &points_extract_by_angle_ptr);
 
-        ros::Publisher pub_register_point_;
-
-        Eigen::Matrix4f rslidar_transform_ = Eigen::Matrix4f::Identity();
-        Eigen::Matrix4f lslidar_transform_ = Eigen::Matrix4f::Identity();
-
-        std::vector<CloudT> cache_rslidarl_point_cloud;
-        std::vector<CloudT> cache_rslidarr_point_cloud;
-        std::vector<CloudT> cache_lslidar_point_cloud;
-
-        CloudT::Ptr rslidar_result_cloud_ptr_ = boost::make_shared<CloudT>();
-        CloudT::Ptr lslidar_result_cloud_ptr_ = boost::make_shared<CloudT>();
+        ros::Publisher pub_extract_point_front_;
+        ros::Publisher pub_extract_point_back_;
     };
 
 } // namespace skywell

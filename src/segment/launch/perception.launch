@@ -9,7 +9,6 @@
   <param name="pub_no_ground" value="no_ground_points"/>
   </node>
 
-
   <node  name="cluster_node" pkg="perception_cluster" type="cluster_node" output="screen">
   <param name="sub_ground" value="ground_points"/>
   <param name="sub_no_ground" value="no_ground_points"/>
@@ -18,7 +17,6 @@
   <param name="eucliden" value="{minsize:50,maxsize:1000,rounds:3,radius:20,distance:0.2,radius:30,distance:0.3,radius:40,distance:0.4}"/>
   <param name="dbscan" value="{minnum:20,aroundnum:16,radius:0.8}"/>
   </node>
-
 
   <node name="track_node" pkg="perception_track" type="track_node" output="screen">
   </node>

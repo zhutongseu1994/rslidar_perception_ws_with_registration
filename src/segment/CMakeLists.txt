@@ -52,8 +52,7 @@ link_directories(/usr/local/lib)
 link_directories(${PCL_LIBRARY_DIRS} ${OpenCV_LIBS})
 
 add_executable(segment_node src/main.cpp src/manager.cpp src/param.cpp src/cluster.cpp src/filter.cpp 
-  src/config.cpp src/thread.cpp src/decvcheck.cpp src/icp_registration.cpp)
-
+  src/config.cpp src/thread.cpp src/decvcheck.cpp src/grid_segment.cpp)
 add_dependencies(segment_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(segment_node
   ${catkin_LIBRARIES}

@@ -7,10 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib:$LD_LIBRARY_PATH"
-export PKG_CONFIG_PATH="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PWD="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build"
-export PYTHONPATH="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/python2.7/dist-packages:$PYTHONPATH"
-export ROSLISP_PACKAGE_DIRECTORIES="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/share/common-lisp"
-export ROS_PACKAGE_PATH="/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src:$ROS_PACKAGE_PATH"
+export CMAKE_PREFIX_PATH="/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/devel:$CMAKE_PREFIX_PATH"
+export PWD="/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build"
+export ROSLISP_PACKAGE_DIRECTORIES="/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/devel/share/common-lisp"
+export ROS_PACKAGE_PATH="/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/src:$ROS_PACKAGE_PATH"

@@ -13,7 +13,6 @@ namespace skywell
     {
         m_param = param;
         m_decv_check = NULL;
-        registration_ = NULL;
 
         SubInit(nh, param);
         PubInit(nh, param);
@@ -26,10 +25,10 @@ namespace skywell
 
     void Manager::SubInit(ros::NodeHandle &nh, skywell::Param *param)
     {
-        if (param->front_rslidar_topic != "")
-        {
-            sub_front_rslidar = nh.subscribe<sensor_msgs::PointCloud2>(param->front_rslidar_topic, 10, boost::bind(&Manager::doRslidarWork, this, _1, param->front_rslidar_topic));
-        }
+        /*if (param->front_rslidar_topic != "")
+	{
+		sub_front_rslidar = nh.subscribe<sensor_msgs::PointCloud2>(param->front_rslidar_topic,10,boost::bind(&Manager::doRslidarWork,this,_1,param->front_rslidar_topic));
+	}*/
         if (param->left_rslidar_topic != "")
         {
             sub_left_rslidar = nh.subscribe<sensor_msgs::PointCloud2>(param->left_rslidar_topic, 10, boost::bind(&Manager::doRslidarWork, this, _1, param->left_rslidar_topic));
@@ -39,7 +38,6 @@ namespace skywell
             sub_right_rslidar = nh.subscribe<sensor_msgs::PointCloud2>(param->right_rslidar_topic, 10, boost::bind(&Manager::doRslidarWork, this, _1, param->right_rslidar_topic));
         }
     };
-
     void Manager::PubInit(ros::NodeHandle &nh, skywell::Param *param)
     {
         if (param->pub_ground != "")
@@ -53,7 +51,8 @@ namespace skywell
         marker_pub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 10);
         decv_state_pub = nh.advertise<segment::OnLineState>("lidar_oline_state", 10);
 
-        pub_register_point_ = nh.advertise<sensor_msgs::PointCloud2>("registration_points", 10);
+        pub_extract_point_front_ = nh.advertise<sensor_msgs::PointCloud2>("extract_points_front_", 10);
+        pub_extract_point_back_ = nh.advertise<sensor_msgs::PointCloud2>("extract_points_back_", 10);
     };
 
     void Manager::ModInit(skywell::Param *param)
@@ -75,14 +74,7 @@ namespace skywell
                 m_decv_check->addDecv(param->right_rslidar_topic, 0x03);
             }
         }
-
-        if (registration_ == NULL)
-        {
-            registration_ = new IcpRegistration();
-        }
-        registration_->IcpRegistrationInit(param);
     };
-
     //64位 微妙时间戳格式化 %G-%m-%d %H:%M:%S.%N
     string gettimestamp(uint64_t timestamp)
     {
@@ -96,113 +88,60 @@ namespace skywell
         return str;
     };
 
+    //
+
     void Manager::doRslidarWork(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, const std::string topicName)
     {
         m_param->loadcfg();
 
+        if (topicName == m_param->right_rslidar_topic)
+        {
+            pcl::PointCloud<pcl::PointXYZI>::Ptr _front_points_extract_by_angle_ptr = boost::make_shared<CloudT>();
+            extractPointCloudByAngle(m_param->ray_angle, in_cloud_ptr,
+                                     m_param->min_front_extract_angle,
+                                     m_param->max_front_extract_angle, _front_points_extract_by_angle_ptr);
+            publish_cloud(pub_extract_point_front_, _front_points_extract_by_angle_ptr);
+        }
+
+        if (topicName == m_param->left_rslidar_topic)
+        {
+            pcl::PointCloud<pcl::PointXYZI>::Ptr _back_points_extract_by_angle_ptr = boost::make_shared<CloudT>();
+            extractPointCloudByAngle(m_param->ray_angle, in_cloud_ptr,
+                                     m_param->min_back_extract_angle,
+                                     m_param->max_back_extract_angle,
+                                     _back_points_extract_by_angle_ptr);
+            publish_cloud(pub_extract_point_back_, _back_points_extract_by_angle_ptr);
+        }
+
+        CloudT::Ptr current_pc_ptr = boost::make_shared<CloudT>();
+        pcl::fromROSMsg(*in_cloud_ptr, *current_pc_ptr);
+        //根据topicName 检查对应话题是否工作正常是否有效
         m_decv_check->aliveDecv(topicName);
-
-        if (m_param->need_global_registration)
+        //ROS_INFO("topicName:%s,current time:%s\n",topicName.c_str(),gettimestamp(current_pc_ptr->header.stamp).c_str());
+        //ROS_INFO("m_decv_check->getOnlineNum() = %d\n",m_decv_check->getOnlineNum());
+        // 第一阶段，多雷达数据合并
+        //缓存数据，根据雷达数目，考虑缓存几场数据
+        cache_livox_point_cloud.push_back(*current_pc_ptr);
+        if (cache_livox_point_cloud.size() < m_decv_check->getOnlineNum())
         {
-            if (topicName == m_param->front_rslidar_topic)
-            {
-                pretreatPointClouds(in_cloud_ptr, cache_lslidar_point_cloud);
-            }
-
-            if (topicName == m_param->left_rslidar_topic)
-            {
-                pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
-            }
-
-            if (topicName == m_param->right_rslidar_topic)
-            {
-                pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
-            }
-
-            if (cache_lslidar_point_cloud.size() == 0 || cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
-            {
-                return;
-            }
-
-            //两补盲雷达配准
-            CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
-            CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
-            CloudT::Ptr _lslidar_source_cloud_ptr = boost::make_shared<CloudT>(cache_lslidar_point_cloud.back());
-            registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr, _lslidar_source_cloud_ptr);
-
-            rslidar_transform_ = registration_->getLocalTransformMatrix();
-            cout << "rslidar_transform: \n"
-                 << rslidar_transform_.matrix() << endl;
-
-            transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
-                                 rslidar_result_cloud_ptr_, rslidar_transform_);
-
-            //补盲雷达配准后的结果和主雷达配准
-
-            lslidar_transform_ = registration_->getGlobaltransformMatrix();
-            cout << "lslidar_transform: \n"
-                 << lslidar_transform_.matrix() << endl;
-
-            transformPointClouds(_lslidar_source_cloud_ptr, rslidar_result_cloud_ptr_,
-                                 lslidar_result_cloud_ptr_, lslidar_transform_);
-            publish_cloud(pub_register_point_, lslidar_result_cloud_ptr_);
-
-            // printf("The program is running here.\n");
-
-            cache_lslidar_point_cloud.clear();
-            cache_rslidarl_point_cloud.clear();
-            cache_rslidarr_point_cloud.clear();
+            return;
         }
-        else
+        //多场数据合并
+        CloudT::Ptr cloud_sum_ptr = boost::make_shared<CloudT>();
+        for (size_t i = 0; i < cache_livox_point_cloud.size(); i++)
         {
-            if (topicName == m_param->left_rslidar_topic)
-            {
-                pretreatPointClouds(in_cloud_ptr, cache_rslidarl_point_cloud);
-            }
-
-            if (topicName == m_param->right_rslidar_topic)
-            {
-                pretreatPointClouds(in_cloud_ptr, cache_rslidarr_point_cloud);
-            }
-
-            if (cache_rslidarl_point_cloud.size() == 0 || cache_rslidarr_point_cloud.size() == 0)
-            {
-                return;
-            }
-
-            //两补盲雷达配准
-            CloudT::Ptr _rslidarl_source_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarl_point_cloud.back());
-            CloudT::Ptr _rslidarr_target_cloud_ptr = boost::make_shared<CloudT>(cache_rslidarr_point_cloud.back());
-
-            registration_->addPointCloud(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr);
-
-            rslidar_transform_ = registration_->getLocalTransformMatrix();
-            cout << "rslidar_transform: \n"
-                 << rslidar_transform_.matrix() << endl;
-
-            transformPointClouds(_rslidarl_source_cloud_ptr, _rslidarr_target_cloud_ptr,
-                                 rslidar_result_cloud_ptr_, rslidar_transform_);
-            publish_cloud(pub_register_point_, rslidar_result_cloud_ptr_);
-
-            cache_rslidarl_point_cloud.clear();
-            cache_rslidarr_point_cloud.clear();
+            CloudT::Ptr cloud_ptr = boost::make_shared<CloudT>();
+            cloud_ptr = cache_livox_point_cloud[i].makeShared();
+            *cloud_sum_ptr += *cloud_ptr;
         }
-
+        cache_livox_point_cloud.clear();
         ros::Time startTime = ros::Time::now();
         struct timeval start;
         gettimeofday(&start, NULL);
         //ROS_INFO("startTime time:%s\n",gettimestamp(start.tv_sec*1000000+start.tv_usec).c_str());
-
         // 体素下采样
         CloudT::Ptr octree_voxel_grid_ptr = boost::make_shared<CloudT>();
-        if (m_param->need_global_registration)
-        {
-            octreeVoxelGrid(m_param->leaf_size, lslidar_result_cloud_ptr_, octree_voxel_grid_ptr);
-        }
-        else
-        {
-            octreeVoxelGrid(m_param->leaf_size, rslidar_result_cloud_ptr_, octree_voxel_grid_ptr);
-        }
+        octreeVoxelGrid(m_param->leaf_size, cloud_sum_ptr, octree_voxel_grid_ptr);
 
         // 去除nan点
         CloudT::Ptr remove_nan_ptr = boost::make_shared<CloudT>();
@@ -216,7 +155,7 @@ namespace skywell
         CloudT::Ptr remove_close_ptr = boost::make_shared<CloudT>();
         remove_close_pt(m_param->clip_min_x, m_param->clip_min_y, m_param->clip_max_x, m_param->clip_max_y, cliped_pc_ptr, remove_close_ptr);
 
-        if (m_param->seg_model == 0) //
+        if (m_param->seg_model == 0)
         {
             // 射线去地面
             GroundSegment(m_param->ray_angle, m_param->initial_distance, m_param->max_distance, m_param->height_threshold, m_param->slope_threshold, remove_close_ptr);
@@ -230,7 +169,7 @@ namespace skywell
             // 栅格去地面
             grid_segment(remove_close_ptr);
         }
-        else if (m_param->seg_model == 9) //
+        else if (m_param->seg_model == 9)
         {
             debugRayGround(remove_close_ptr);
         }
@@ -243,22 +182,45 @@ namespace skywell
         ROS_INFO("segment_node---------------- use_time = %f mesc\n", elapsedTime);
     };
 
-    void Manager::pretreatPointClouds(const sensor_msgs::PointCloud2ConstPtr &in_cloud_ptr, std::vector<CloudT> &cloud_container)
+    void Manager::extractPointCloudByAngle(float ray_angle, const sensor_msgs::PointCloud2ConstPtr in_cloud,
+                                           float min_extract_angle, float max_extract_angle,
+                                           pcl::PointCloud<pcl::PointXYZI>::Ptr &points_extract_by_angle_ptr)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr current_pc_ptr = boost::make_shared<CloudT>();
-        pcl::fromROSMsg(*in_cloud_ptr, *current_pc_ptr);
-        cloud_container.push_back(*current_pc_ptr);
-    }
+        std::vector<pcl::PointIndices> _radial_division_indices;
+        std::vector<PointCloudXYZIRT> _radial_ordered_clouds;
 
-    void Manager::transformPointClouds(const CloudT::Ptr &source_cloud_ptr,
-                                       const CloudT::Ptr &target_cloud_ptr,
-                                       CloudT::Ptr &result_cloud_ptr,
-                                       Eigen::Matrix4f &transform_matrix)
-    {
-        //把目标点云转换回源框架
-        pcl::transformPointCloud(*target_cloud_ptr, *result_cloud_ptr, transform_matrix);
-        //添加源点云到转换目标
-        *result_cloud_ptr += *source_cloud_ptr;
+        int _radial_dividers_num = ceil(360 / ray_angle);
+        _radial_division_indices.resize(_radial_dividers_num);
+        _radial_ordered_clouds.resize(_radial_dividers_num);
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr current_pc_ptr = boost::make_shared<CloudT>();
+        pcl::fromROSMsg(*in_cloud, *current_pc_ptr);
+        XYZI_to_RTZ(ray_angle, current_pc_ptr, _radial_division_indices, _radial_ordered_clouds);
+
+        pcl::PointIndices _out_angle_indices;
+        // _out_angle_indices.indices.clear();
+
+        for (size_t i = 0; i < _radial_ordered_clouds.size(); ++i)
+        {
+            for (size_t j = 0; j < _radial_ordered_clouds[i].size(); ++j)
+            {
+                if (_radial_ordered_clouds[i][j].theta < max_extract_angle &&
+                    _radial_ordered_clouds[i][j].theta > min_extract_angle)
+                {
+                    _out_angle_indices.indices.push_back(_radial_ordered_clouds[i][j].original_index);
+                }
+            }
+        }
+
+        //pcl::PointCloud<pcl::PointXYZI>::Ptr _points_extract_by_angle_ptr = boost::make_shared<CloudT>();
+
+        pcl::ExtractIndices<pcl::PointXYZI> _extract_point_cloud_by_angle;
+        _extract_point_cloud_by_angle.setInputCloud(current_pc_ptr);
+        _extract_point_cloud_by_angle.setIndices(boost::make_shared<pcl::PointIndices>(_out_angle_indices));
+
+        _extract_point_cloud_by_angle.setNegative(true);
+        _extract_point_cloud_by_angle.filter(*points_extract_by_angle_ptr);
+        //publish_cloud(pub_extract_point_, _points_extract_by_angle_ptr);
     }
 
     void Manager::RayGroundSegment(float ray_angle, float he, float hg, const CloudT::Ptr in_cloud)
@@ -770,7 +732,6 @@ void Manager::RansacSegmentPlane(const CloudT::Ptr in_cloud)
  *     -<em>false</em> 非地面点
  *     -<em>true</em> 地面点
  */
-
     bool Manager::check_point_is_ground(std::vector<PointXYZIRT> &ground_points, int index, PointXYZIRT &pointxyzrt, double initial_distance, double max_distance, double height_threshold, double slope_threshold)
     {
         if (pointxyzrt.point.z < initial_distance)
@@ -926,15 +887,11 @@ void Manager::RansacSegmentPlane(const CloudT::Ptr in_cloud)
         out_ground_indices.indices.clear();
         out_no_ground_indices.indices.clear();
         out_road_boundary_indices.indices.clear();
-        //printf("=================================================\n");
         for (size_t i = 0; i < in_radial_ordered_clouds.size(); i++) //sweep through each radial division 遍历每一根射线
-        //for (size_t i = 310; i < 311; i++) //sweep through each radial division 遍历每一根射线
         {
-            //printf("---------------------------------------------\n");
             bool current_ground = false;
 
             // 从前往后判断一次
-            //std::cout<<"=================第一次判断========================"<<std::endl;
             size_t points_size = in_radial_ordered_clouds[i].size();
             for (size_t j = 0; j < points_size; j++)
             {
@@ -942,15 +899,12 @@ void Manager::RansacSegmentPlane(const CloudT::Ptr in_cloud)
                 if (current_ground)
                 {
                     in_radial_ordered_clouds[i][j].ground_flag = 0;
-                    //std::cout<<"radius:"<<in_radial_ordered_clouds[i][j].radius<<",x:"<<in_radial_ordered_clouds[i][j].point.x<<",y:"<<in_radial_ordered_clouds[i][j].point.y<<",z:"<<in_radial_ordered_clouds[i][j].point.z<<"------ ground"<<std::endl;
                 }
                 else
                 {
                     in_radial_ordered_clouds[i][j].ground_flag = 1;
-                    //std::cout<<"radius:"<<in_radial_ordered_clouds[i][j].radius<<",x:"<<in_radial_ordered_clouds[i][j].point.x<<",y:"<<in_radial_ordered_clouds[i][j].point.y<<",z:"<<in_radial_ordered_clouds[i][j].point.z<<"------ no ground"<<std::endl;
                 }
             }
-            //printf("+++++++++++++++++++++++++++++++++++++++++++++++\n");
             // 从后向前验证一次
             for (size_t j = points_size; j > 0; j--)
             {
@@ -1280,7 +1234,7 @@ void Manager::ToObstSet(ClusterVectorPtr midsave,perception::ObstSet &obstset,ui
         extract.setNegative(true);
         extract.filter(*no_ground_cloud_ptr);
 
-        //publish_cloud(pub_ground, ground_cloud_ptr);
+        publish_cloud(pub_ground, ground_cloud_ptr);
         publish_cloud(pub_no_ground, no_ground_cloud_ptr);
     };
 
@@ -1289,16 +1243,16 @@ void Manager::ToObstSet(ClusterVectorPtr midsave,perception::ObstSet &obstset,ui
         CloudT::Ptr no_ground_cloud_ptr = boost::make_shared<CloudT>();
         CloudT::Ptr ground_cloud_ptr = boost::make_shared<CloudT>();
         pcl::PointIndices out_indices;
-        GridCloud gridcloud;
-        gridcloud.setGridRange(-30, -50, 200, 50);
-        gridcloud.setGridSize(1.0);
-        gridcloud.initGrid();
 
-        gridcloud.setInputCloud(in_cloud);
-        //gridcloud.zeroGrid();
-        gridcloud.process();
-        gridcloud.setHeighThreshold(0.2);
-        gridcloud.segment(out_indices);
+        skywell::GridSegment _grid_segment;
+        _grid_segment.setGridRange(-30, -30, 30, 30);
+        _grid_segment.setGridSize(1.0);
+        _grid_segment.initGrid();
+
+        _grid_segment.setInputCloud(in_cloud);
+        _grid_segment.processGrid();
+        _grid_segment.setHeightThreshold(0.2);
+        _grid_segment.segment(ground_grid_list, out_indices);
 
         // 提取点云地面
         pcl::ExtractIndices<PointT> extract;

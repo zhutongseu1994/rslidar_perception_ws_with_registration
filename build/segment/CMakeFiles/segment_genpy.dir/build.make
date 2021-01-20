@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src
+CMAKE_SOURCE_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build
+CMAKE_BINARY_DIR = /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build
 
 # Utility rule file for segment_genpy.
 
@@ -63,10 +63,10 @@ segment/CMakeFiles/segment_genpy.dir/build: segment_genpy
 .PHONY : segment/CMakeFiles/segment_genpy.dir/build
 
 segment/CMakeFiles/segment_genpy.dir/clean:
-	cd /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build/segment && $(CMAKE_COMMAND) -P CMakeFiles/segment_genpy.dir/cmake_clean.cmake
+	cd /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build/segment && $(CMAKE_COMMAND) -P CMakeFiles/segment_genpy.dir/cmake_clean.cmake
 .PHONY : segment/CMakeFiles/segment_genpy.dir/clean
 
 segment/CMakeFiles/segment_genpy.dir/depend:
-	cd /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/src/segment /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build/segment /home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/build/segment/CMakeFiles/segment_genpy.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/src /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/src/segment /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build/segment /home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/build/segment/CMakeFiles/segment_genpy.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : segment/CMakeFiles/segment_genpy.dir/depend
 

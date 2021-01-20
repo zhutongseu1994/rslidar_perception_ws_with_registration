@@ -7,8 +7,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/cluster_node.dir/src/match.cpp.o"
   "CMakeFiles/cluster_node.dir/src/cluster.cpp.o"
   "CMakeFiles/cluster_node.dir/src/cluster3d.cpp.o"
-  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/cluster/cluster_node.pdb"
-  "/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel/lib/cluster/cluster_node"
+  "/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/devel/lib/cluster/cluster_node.pdb"
+  "/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/devel/lib/cluster/cluster_node"
 )
 
 # Per-language clean rules from dependency scanning.

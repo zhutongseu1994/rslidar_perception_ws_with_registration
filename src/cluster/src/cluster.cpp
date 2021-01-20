@@ -317,6 +317,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr RegionGrowCluster::cluster(pcl::PointCloud<
 		return obstCloud;
 };
 
+
 }
 
 

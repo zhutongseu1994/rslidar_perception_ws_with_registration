@@ -1,2 +1,2 @@
 cluster:segment:track
--DCATKIN_DEVEL_PREFIX=/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/devel -DCMAKE_INSTALL_PREFIX=/home/sky1/Desktop/rslidar_perception_ws_with_registration_1114_V3/install -G Unix Makefiles
+-DCATKIN_DEVEL_PREFIX=/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/devel -DCMAKE_INSTALL_PREFIX=/home/sky1/program/rslidar_perception_ws_with_registration_V2.1.5/install -G Unix Makefiles

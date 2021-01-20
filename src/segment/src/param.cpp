@@ -127,57 +127,11 @@ namespace skywell
         height_threshold = atof(cfg.getValue("RAY_SEG", "height_threshold").c_str());
         slope_threshold = atof(cfg.getValue("RAY_SEG", "slope_threshold").c_str());
 
-        leaf_size_registration = atof(cfg.getValue("REGISTRATION_NODE", "leaf_size_registration").c_str());
-        string clip_region_range = cfg.getValue("REGISTRATION_NODE", "clip_region_range");
-        string value_ = "";
-        value_ = findkeyvalue(clip_region_range, "minx");
-        if (value_ != "")
-        {
-            clip_region_min_x = atof(value_.c_str());
-        }
-        else
-        {
-            clip_region_min_x = -0.1f;
-        }
-        value_ = findkeyvalue(clip_region_range, "miny");
-        if (value_ != "")
-        {
-            clip_region_min_y = atof(value_.c_str());
-        }
-        else
-        {
-            clip_region_min_y = -0.1f;
-        }
-        value_ = findkeyvalue(clip_region_range, "maxx");
-        if (value_ != "")
-        {
-            clip_region_max_x = atof(value_.c_str());
-        }
-        else
-        {
-            clip_region_max_x = 0.1f;
-        }
-        value_ = findkeyvalue(clip_region_range, "maxy");
-        if (value_ != "")
-        {
-            clip_region_max_y = atof(value_.c_str());
-        }
-        else
-        {
-            clip_region_max_y = 0.1f;
-        }
-        icp_transformation_epsilon = atof(cfg.getValue("REGISTRATION_NODE", "icp_transformation_epsilon").c_str());
-        icp_max_correspondence_distance = atof(cfg.getValue("REGISTRATION_NODE", "icp_max_correspondence_distance").c_str());
-        icp_euclidean_fitness_epsilon = atof(cfg.getValue("REGISTRATION_NODE", "icp_euclidean_fitness_epsilon").c_str());
-        icp_max_iterations = atoi(cfg.getValue("REGISTRATION_NODE", "icp_max_iterations").c_str());
-        icp_optimized_iterations = atoi(cfg.getValue("REGISTRATION_NODE", "icp_optimized_iterations").c_str());
-        need_global_registration = atoi(cfg.getValue("REGISTRATION_NODE", "need_global_registration").c_str());
+        min_front_extract_angle = atof(cfg.getValue("EXTRACT_ANGLE", "min_front_extract_angle").c_str());
+        max_front_extract_angle = atof(cfg.getValue("EXTRACT_ANGLE", "max_front_extract_angle").c_str());
+        min_back_extract_angle = atof(cfg.getValue("EXTRACT_ANGLE", "min_back_extract_angle").c_str());
+        max_back_extract_angle = atof(cfg.getValue("EXTRACT_ANGLE", "max_back_extract_angle").c_str());
 
-        ndt_resolution = atof(cfg.getValue("REGISTRATION_NODE", "ndt_resolution").c_str());
-        ndt_step_size = atof(cfg.getValue("REGISTRATION_NODE", "ndt_step_size").c_str());
-        ndt_transformation_epsilon = atof(cfg.getValue("REGISTRATION_NODE", "ndt_transformation_epsilon").c_str());
-        ndt_max_iterations = atoi(cfg.getValue("REGISTRATION_NODE", "ndt_max_iterations").c_str());
-        reg_model = atoi(cfg.getValue("REGISTRATION_NODE", "reg_model").c_str());
         if (DEBUG_PRINT)
         {
             ROS_INFO("########################SEG_NODE#########################\n");
@@ -188,26 +142,6 @@ namespace skywell
             ROS_INFO("seg_model:%d\n", seg_model);
             ROS_INFO("check_angle:%f\n", check_angle);
             ROS_INFO("ray_seg:ray_angle:%f,initial_distance:%f,max_distance:%f,height_threshold:%f,slope_threshold:%f\n", ray_angle, initial_distance, max_distance, height_threshold, slope_threshold);
-
-            ROS_INFO("########################REGISTRATION_NODE#########################\n");
-            ROS_INFO("front_rslidar_topic:%s\n", front_rslidar_topic.c_str());
-            ROS_INFO("left_rslidar_topic:%s\n", left_rslidar_topic.c_str());
-            ROS_INFO("right_rslidar_topic:%s\n", right_rslidar_topic.c_str());
-            ROS_INFO("Clip:height:%f,minx:%f,miny:%f,maxx:%f,maxy:%f\n", clip_height, clip_region_min_x, clip_region_min_y, clip_region_max_x, clip_region_max_y);
-            ROS_INFO("leaf_size:%f,leaf_size_registration:%f\n", leaf_size, leaf_size_registration);
-            ROS_INFO("need_global_registration:%d\n", need_global_registration);
-
-            ROS_INFO("ndt_resolution:%f\n", ndt_resolution);
-            ROS_INFO("ndt_step_size:%f\n", ndt_step_size);
-            ROS_INFO("ndt_transformation_epsilon:%f\n", ndt_transformation_epsilon);
-            ROS_INFO("ndt_max_iterations:%d\n", ndt_max_iterations);
-
-            ROS_INFO("icp_max_correspondence_distance:%f\n", icp_max_correspondence_distance);
-            ROS_INFO("icp_euclidean_fitness_epsilon:%f\n", icp_euclidean_fitness_epsilon);
-            ROS_INFO("icp_transformation_epsilon:%f\n", icp_transformation_epsilon);
-            ROS_INFO("icp_max_iterations:%d\n", icp_max_iterations);
-            ROS_INFO("icp_optimized_iterations:%d\n", icp_optimized_iterations);
-            ROS_INFO("reg_model:%d\n", reg_model);
             DEBUG_PRINT = false;
         }
         return 0;
